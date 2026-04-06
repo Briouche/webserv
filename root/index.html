@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Webserv Test Front</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #1e1e1e;
+    color: #f0f0f0;
+    padding: 40px;
+}
+h1 {
+    color: #6cf;
+    text-align: center;
+    margin-bottom: 40px;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+section {
+    background: #2a2a2a;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+section h2 {
+    color: #6cf;
+    margin-top: 0;
+    border-bottom: 1px solid #3a3a3a;
+    padding-bottom: 10px;
+}
+button {
+    padding: 10px 18px;
+    margin-top: 10px;
+    cursor: pointer;
+    background: #6cf;
+    color: #1e1e1e;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+button:hover {
+    background: #4af;
+}
+input[type="text"], input[type="file"] {
+    padding: 6px 10px;
+    margin-top: 5px;
+    background: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 6px;
+    color: #f0f0f0;
+    width: 100%;
+    box-sizing: border-box;
+}
+label {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #aaa;
+}
+p {
+    color: #aaa;
+    font-size: 0.9em;
+}
+</style>
+</head>
+<body>
+<h1>&#x1F9EA; Webserv &#8211; by LeCartuy, StDevis & BrCoppie</h1>
+<div class="grid">
+
+<section>
+    <h2>&#128279; GET</h2>
+    <p>Requête GET de votre choix</p>
+    <label>Chemin :
+        <input type="text" id="getRootPath" value="/" style="margin-bottom: 10px;">
+    </label>
+    <button onclick="window.location = document.getElementById('getRootPath').value">
+        Envoyer GET
+    </button>
+</section>
+
+<section>
+    <h2>&#128008; GET /html/chats.html</h2>
+    <p>Clique ici pour du pur bonheur</p>
+    <a href="/html/chats.html"><button>Envoyer GET /chats</button></a>
+</section>
+
+<section>
+    <h2>&#128269; GET avec Query String</h2>
+    <p>Envoie un GET avec des param&#232;tres dans l'URL</p>
+    <label>Chemin :
+        <input type="text" id="getPath" value="/cgi-bin/greetings.php">
+    </label>
+    <label>Query string :
+        <input type="text" id="getQuery" value="name=&description=">
+    </label>
+    <button onclick="window.location = document.getElementById('getPath').value + '?' + document.getElementById('getQuery').value">
+        Envoyer GET
+    </button>
+</section>
+
+<section>
+    <h2>&#128100; POST CGI</h2>
+    <p>Envoie un POST &#224; un script CGI</p>
+    <label>Script :
+        <input type="text" id="postAction" value="/cgi-bin/greetings.php">
+    </label>
+    <label>Message :
+        <input type="text" id="postMessage" name="message" value="hello!">
+    </label>
+    <form id="postForm" method="POST">
+        <input type="hidden" id="hiddenMessage" name="message">
+    </form>
+    <button type="button" onclick="
+        document.getElementById('hiddenMessage').value = document.getElementById('postMessage').value;
+        document.getElementById('postForm').action = document.getElementById('postAction').value;
+        document.getElementById('postForm').submit()">
+        Envoyer POST
+    </button>
+</section>
+
+<section style="grid-column: 1 / -1;">
+    <h2>&#128193; Upload de fichier</h2>
+    <p>Envoie un fichier sur le serveur via multipart/form-data</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+        <div>
+            <h3 style="color: #aaa; margin-top: 0;">Depuis un fichier local</h3>
+            <label>Route :
+                <input type="text" id="uploadRoute" value="/uploads/">
+            </label>
+            <label>Fichier :
+                <input type="file" id="fileInput" name="file">
+            </label>
+            <form id="uploadForm" method="POST" enctype="multipart/form-data"></form>
+            <button type="button" onclick="
+                var file = document.getElementById('fileInput').files[0];
+                if (!file) { alert('Choisis un fichier!'); return; }
+                var route = document.getElementById('uploadRoute').value;
+                document.getElementById('uploadForm').action = route + file.name;
+                document.getElementById('uploadForm').submit();">
+                Envoyer fichier
+            </button>
+        </div>
+
+        <div>
+            <h3 style="color: #aaa; margin-top: 0;">Depuis un body texte</h3>
+            <label>Route (avec nom de fichier) :
+                <input type="text" id="uploadTextRoute" value="/uploads/myfile.txt">
+            </label>
+            <label>Contenu :
+                <textarea id="uploadBody" rows="4" style="
+                    width: 100%;
+                    box-sizing: border-box;
+                    background: #3a3a3a;
+                    border: 1px solid #555;
+                    border-radius: 6px;
+                    color: #f0f0f0;
+                    padding: 8px;
+                    margin-top: 5px;
+                    resize: vertical;">Your text</textarea>
+            </label>
+            <button type="button" onclick="
+                var route = document.getElementById('uploadTextRoute').value;
+                var body = document.getElementById('uploadBody').value;
+                fetch(route, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: body
+                }).then(function(r) {
+                    if (r.ok) alert('Fichier envoyé! Status: ' + r.status);
+                    else alert('Erreur: ' + r.status);
+                }).catch(function(e) { alert('Erreur: ' + e); });">
+                Envoyer body
+            </button>
+        </div>
+
+    </div>
+</section>
+
+<section style="grid-column: 1 / -1;">
+    <h2>&#128465; Supprimer un fichier</h2>
+    <p>Envoie une requête DELETE pour supprimer un fichier du serveur</p>
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+        <div>
+            <label>Chemin du fichier :
+                <input type="text" id="deletePath" value="/uploads/" placeholder="Ex: /uploads/monfichier.txt">
+            </label>
+            <button type="button" onclick="
+                var path = document.getElementById('deletePath').value;
+                fetch(path, {
+                    method: 'DELETE'
+                }).then(function(r) {
+                    if (r.ok) alert('Fichier supprimé! Status: ' + r.status);
+                    else alert('Erreur: ' + r.status);
+                }).catch(function(e) { alert('Erreur: ' + e); });">
+                Supprimer fichier
+            </button>
+        </div>
+    </div>
+</section>
+
+</div>
+
+</body>
+</html>

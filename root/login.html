@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: #1e1e1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* 🌧️ Rain container */
+.rain-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+/* 🌧️ Falling images */
+.rain-img {
+	pointer-events: auto;
+    cursor: pointer;
+    position: absolute;
+    top: -150px;
+    opacity: 0.7;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    100% {
+        transform: translateY(120vh) rotate(360deg);
+    }
+}
+
+/* UI stays above rain */
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.card {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-radius: 12px;
+    width: 420px;
+    padding: 52px 48px 44px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: #66ccff;
+}
+
+h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: #66ccff;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #aaa;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+}
+
+label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #aaa;
+}
+
+input {
+    width: 100%;
+    background: #3a3a3a;
+    border: 1px solid #555;
+    color: #f0f0f0;
+    padding: 12px;
+    margin: 8px 0 20px;
+    border-radius: 6px;
+}
+
+input:focus { border-color: #66ccff; }
+
+button {
+    width: 100%;
+    background: #66ccff;
+    border: none;
+    padding: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+button:hover { background: #44aaff; }
+
+</style>
+</head>
+
+<body>
+
+<!-- 🌧️ Rain layer -->
+<div class="rain-container"></div>
+
+<!-- UI -->
+<div class="main-container">
+
+    <img src="https://st.depositphotos.com/1006318/3174/i/450/depositphotos_31742685-stock-photo-businessman-hold-hand-welcome-gesture.jpg" style="padding-bottom: 30px;">
+
+    <div class="card">
+        <h1>Welcome back</h1>
+        <p class="subtitle">Sign in to continue</p>
+
+        <form method="POST" action="/cgi-bin/login.php">
+            <label>Username</label>
+            <input type="text" name="username" required>
+
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <button type="submit">Sign in</button>
+        </form>
+    </div>
+
+    <img src="https://st.depositphotos.com/1006318/3174/i/450/depositphotos_31742685-stock-photo-businessman-hold-hand-welcome-gesture.jpg" style="padding-top: 30px;">
+</div>
+
+<script>
+const container = document.querySelector(".rain-container");
+const imageSrc = "https://st.depositphotos.com/1006318/3174/i/450/depositphotos_31742685-stock-photo-businessman-hold-hand-welcome-gesture.jpg";
+
+function createRainDrop(x = null, y = null, sizeOverride = null) {
+    const img = document.createElement("img");
+    img.src = imageSrc;
+    img.className = "rain-img";
+
+    const size = sizeOverride || (60 + Math.random() * 120);
+    img.style.width = size + "px";
+
+    img.style.left = x !== null ? x + "px" : Math.random() * window.innerWidth + "px";
+    img.style.top = y !== null ? y + "px" : "-150px";
+
+    const duration = 4 + Math.random() * 5;
+    img.style.animationDuration = duration + "s";
+
+    // 💥 CLICK TO EXPLODE
+    img.addEventListener("click", () => {
+        const rect = img.getBoundingClientRect();
+
+        // Remove original
+        img.remove();
+
+        // Create 2 smaller pieces
+        for (let i = 0; i < 2; i++) {
+            const piece = document.createElement("img");
+            piece.src = imageSrc;
+            piece.className = "rain-img";
+
+            const newSize = size * 0.6;
+            piece.style.width = newSize + "px";
+
+            // Start at click position
+            piece.style.position = "fixed";
+            piece.style.left = rect.left + "px";
+            piece.style.top = rect.top + "px";
+
+            // Add slight horizontal "explosion" spread
+            const direction = i === 0 ? -1 : 1;
+            const drift = 50 + Math.random() * 100;
+
+            piece.style.animation = "none";
+
+            // Animate manually (fall + sideways)
+            piece.animate([
+                { transform: "translate(0,0) rotate(0deg)" },
+                { transform: `translate(${direction * drift}px, 120vh) rotate(360deg)` }
+            ], {
+                duration: 3000 + Math.random() * 2000,
+                easing: "linear"
+            });
+
+            container.appendChild(piece);
+
+            // Remove after animation
+            setTimeout(() => piece.remove(), 5000);
+        }
+    });
+
+    container.appendChild(img);
+
+    setTimeout(() => {
+        img.remove();
+    }, duration * 1000);
+}
+
+/* 🌧️ continuous rain */
+setInterval(() => createRainDrop(), 250);
+</script>
+</body>
+</html>
